@@ -8,10 +8,16 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Security;
 namespace Program;
 
 class Program
 {
+    enum Player
+    {
+        Black,
+        White
+    }
     enum PieceType
     {
         None,
@@ -50,6 +56,7 @@ class Program
         }
         public void Draw()
         {
+            Console.Clear();
             Console.WriteLine("  1 2 3 4 5 6 7 8");
             for (int y = 0; y < 8; y++)
             {
@@ -92,10 +99,80 @@ class Program
             }
         }
     }
-        static void Main()
+
+    class Game
+    {
+        private Board board;
+        private Player currentPlayer;
+        private int cursorX = 0;
+        private int cursorY = 0;
+        private (int X, int Y)? selectedPiece = null;
+        public Game()
         {
-            var board = new Board();
-            board.Draw();
-            Console.WriteLine("Hello!");
+            board = new Board();
+            currentPlayer = Player.White;
         }
+
+        public void Start()
+        {
+            while (true)
+            {
+                Console.Clear();
+                board.Draw();
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.LeftArrow: if (cursorX > 0) cursorX--; break;
+                    case ConsoleKey.RightArrow: if (cursorX < 7) cursorX++; break;
+                    case ConsoleKey.UpArrow: if (cursorY > 0) cursorY--; break;
+                    case ConsoleKey.DownArrow: if (cursorY < 7) cursorY++; break;
+                    case ConsoleKey.Enter: SelectingChecker(); break;
+                }
+            }
+        }
+        private void SelectingChecker()
+        {
+            if (selectedPiece == null)
+            {
+                var piece = board.Cells[cursorY, cursorX];
+                if (currentPlayer == Player.White && (piece == PieceType.White || piece == PieceType.WhiteKing)
+                 || currentPlayer == Player.Black && (piece == PieceType.Black || piece == PieceType.BlackKing))
+                {
+                    selectedPiece = (cursorX, cursorY);
+                }
+            }
+            else
+            {
+                var from = selectedPiece.Value;
+                if (board.Move(from.X, from.Y, cursorX, cursorY))
+                {
+                    if (currentPlayer == Player.Black)
+                    {
+                        currentPlayer = Player.White;
+                    }
+                    else
+                    {
+                        currentPlayer = Player.Black;
+                    }
+                }
+                selectedPiece = null;
+            }
+        }
+        private bool Move(int fromX, int fromY, int toX, int toY)
+        {
+            if (fromX < 0 || fromX > 7 || fromY < 0 || fromY > 7 || toX < 0 || toX > 7 || toY < 0 || toY > 7)
+            {
+                return false;
+            }
+            var piece = board.Cells[fromX, fromY];
+            if (piece == PieceType.None) return false;
+
+        }
+    }
+        static void Main()
+    {
+        var board = new Board();
+        board.Draw();
+        Console.WriteLine("Hello!");
+    }
 }
