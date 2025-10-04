@@ -1,0 +1,13 @@
+# Папки сборки
+bin/
+obj/
+
+# Visual Studio Code
+.vscode/
+
+# Временные и кэш-файлы
+*.log
+*.tmp
+*.temp
+*.swp
+*.bak
